@@ -11,6 +11,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -18,9 +21,12 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final String API_URL = "http://api.openweathermap.org/data/2.5/forecast/city?q=newyork,newyork&APPID=286c90a2b702c059135ae9f427fbc5ac";
+
     public class DownloadTask extends AsyncTask<String, Void, String> {
         @Override
-        protected String doInBackground(String... urls) {
+        protected String doInBackground(String... urls)
+        {
             String result = "";
             URL url;
             HttpURLConnection urlConnection = null;
@@ -50,7 +56,22 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
 
-            Log.i("Website Content", result);
+            try {
+                JSONObject jsonObject = new JSONObject(result);
+//                String weatherInfo = jsonObject.getString("weather");
+//
+//                Log.i("Website Content", weatherInfo);
+
+                JSONArray listArray = jsonObject.getJSONArray("list");
+                for (int i = 0; i < listArray.length(); i++){
+                    JSONObject jsonPart = listArray.getJSONObject(i).getJSONArray("weather").getJSONObject(0);
+
+                    Log.i("main", jsonPart.getString("main"));
+                    Log.i("description", jsonPart.getString("description"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -72,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         DownloadTask task = new DownloadTask();
         // Content is displayed in LogCat via "onPostExecute" method.
-        task.execute("http://api.openweathermap.org/data/2.5/forecast/city?id=524901&APPID=286c90a2b702c059135ae9f427fbc5ac");
+        task.execute(API_URL);
     }
 
     @Override
